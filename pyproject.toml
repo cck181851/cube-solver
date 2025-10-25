@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cube-solver"
+version = "0.1.0"
+dependencies = [
+  "numpy"
+]
+requires-python = ">=3.9"
+description = "Minimal Rubik's Cube Solver"
+
+[project.scripts]
+cube = "cube_solver.cli:app"
