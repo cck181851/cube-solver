@@ -29,7 +29,7 @@ git clone https://github.com/cck181851/rubiks-cube-benchmark.git
 cd cube-solver
 ```
 
-If Git LFS is not installed, the repository will contain placeholder files instead of the actual **.npz** tables. After cloning with Git LFS, ensure that the **\tables directory** contains the actual **.npz** files. You should see files like **pruning_kociemba.npz**, **pruning_korf.npz,** etc
+If Git LFS is not installed, the repository will contain placeholder files instead of the actual **.npz** tables. After cloning with Git LFS, ensure that the **\tables directory** contains the actual **.npz** files. You should see files like **pruning_kociemba.npz**, **pruning_korf.npz,** etc.
 
 ### 2.  Install Dependencies
 
