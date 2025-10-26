@@ -551,7 +551,7 @@ if __name__ == "__main__":
     # Generate cube configurations using the difficulty categorizer
     print("Generating cube configurations with difficulty analysis...")
     categorizer = CubeDifficultyCategorizer()
-    cubes = categorizer.generate_test_cubes(num_cubes=20)  # Increased for better statistics
+    cubes = categorizer.generate_test_cubes(num_cubes=200)  # can be adjusted
     
     # Run benchmarks
     print("Running benchmarks on generated cubes...")
