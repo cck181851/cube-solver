@@ -89,7 +89,6 @@ For issues with reproduction:
 - Check the system_info section in benchmark_results.txt
 - Verify all table files are present in tables/ directory
 - Ensure Python environment matches requirements
-- Consult the troubleshooting section above
 
 ## Acknowledgement
 
