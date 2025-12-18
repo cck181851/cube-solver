@@ -137,6 +137,10 @@ For issues with reproduction:
 - Verify all table files are present in tables/ directory
 - Ensure Python environment matches requirements
 
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.  
+
 ## Acknowledgement
 
 The implementations of Kociemba and Thistlethwaite Algorithm are based on [cube-solver](https://github.com/itsdaveba/cube-solver)
