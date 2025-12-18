@@ -141,6 +141,8 @@ For issues with reproduction:
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.  
 
+---
+
 ## Acknowledgement
 
 The implementations of Kociemba and Thistlethwaite Algorithm are based on [cube-solver](https://github.com/itsdaveba/cube-solver)
