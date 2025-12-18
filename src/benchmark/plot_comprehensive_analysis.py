@@ -2,12 +2,9 @@ import os
 import math
 import json
 import warnings
-from collections import defaultdict
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
 from scipy import stats
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,16 +15,13 @@ import seaborn as sns
 palette = sns.color_palette("colorblind", n_colors=8)
 
 #  Helpers 
-
 def _safe_scalar(x):
     if x is None:
         return None
     try:
-        # numpy scalars have .item()
         return x.item()
     except Exception:
         return x
-
 
 def _get(obj, key, default=None):
     if obj is None:
@@ -56,7 +50,7 @@ def _ci95(series):
 
 # Main class 
 class PlotComprehensiveAnalysis:
-    def __init__(self, results, output_folder="plots", solvers=None, verbose=True):
+    def __init__(self, results, output_folder="benchmark_data/plots", solvers=None, verbose=True):
         self.results = results or []
         self.output_folder = output_folder
         self.verbose = verbose
@@ -177,9 +171,8 @@ class PlotComprehensiveAnalysis:
         return (diffs > 0).sum(), (diffs < 0).sum(), (diffs == 0).sum(), mask.sum()
 
     # Figures 
-
     def fig_moves(self):
-        # Figure A: moves boxplots + paired slope plot (improvement colored, Wilcoxon test).
+        # Figure A: moves boxplots + paired slope plot
         df = self.df.copy()
         solvers = self.solvers
         fig, axes = plt.subplots(1, 2, figsize=(12, 5), gridspec_kw={"width_ratios": [1, 1]})
@@ -352,8 +345,6 @@ class PlotComprehensiveAnalysis:
         fig.tight_layout(rect=[0, 0, 1, 0.95])
         return self._savefig(fig, "09_avg_metrics_by_difficulty.png")
 
-
-
     def fig_time(self):
         # Figure B: time histogram (log) + time vs moves scatter with robust handling of numeric types
         df = self.df.copy()
@@ -425,14 +416,12 @@ class PlotComprehensiveAnalysis:
         fig.tight_layout()
         return self._savefig(fig, "02_time_hist_and_time_vs_moves.png")
 
-
-
     # Figure C: resources (nodes_expanded + memory)
     def fig_resources(self):
         """
         Figure C: nodes_expanded and memory grouped plots.
         nodes_expanded: show median ± IQR with jittered points; switch to log-scale if strongly skewed.
-        memory: mean ± 95% CI with raw points.
+        memory: mean +- 95% CI with raw points.
         """
         df = self.df.copy()
         solvers = self.solvers
@@ -483,7 +472,7 @@ class PlotComprehensiveAnalysis:
                             transform=ax.transAxes, ha="right", va="top",
                             bbox=dict(fc='white', alpha=0.8))
             else:
-                # memory: show mean ± 95% CI + jittered points
+                # memory: show mean +- 95% CI + jittered points
                 means = []
                 cis = []
                 for rv in raw_vals:
@@ -502,11 +491,10 @@ class PlotComprehensiveAnalysis:
                 ax.set_ylabel("memory (MB)")
                 ax.set_xticks(x)
                 ax.set_xticklabels(solvers)
-                ax.set_title("memory — mean ± 95% CI (individual points shown)")
+                ax.set_title("memory — mean +- 95% CI (individual points shown)")
 
         fig.tight_layout()
         return self._savefig(fig, "03_resources_nodes_memory.png")
-
 
     def fig_difficulty(self):
         df = getattr(self, 'df', None)
@@ -584,7 +572,7 @@ class PlotComprehensiveAnalysis:
         # Decide xlabel: if collapsed to single group, don't show the column name as xlabel
         xlabel = '' if single_group_mode else cat_col
 
-        # Moves boxplot with strip overlay (strip plot will NOT create a legend to avoid duplicates)
+        # Moves boxplot with strip overlay (strip plot will not create a legend to avoid duplicates)
         try:
             sns.boxplot(data=long, x=cat_col, y='moves', hue='solver', ax=axes[0], showfliers=True, palette='muted')
             sns.stripplot(data=long, x=cat_col, y='moves', hue='solver', dodge=True,
@@ -617,7 +605,7 @@ class PlotComprehensiveAnalysis:
         except Exception as e:
             self._log("fig_difficulty: error plotting log_time:", e)
 
-        # INSERTION: remove tick labels when single_group_mode 
+        # remove tick labels when single_group_mode 
         if single_group_mode:
             for ax in axes:
                 ax.set_xlabel('')       # ensure axis label is empty
@@ -648,10 +636,6 @@ class PlotComprehensiveAnalysis:
         Computes differences only on paired rows (both solvers present).
         Saves as '05_paired_differences_and_success.png'
         """
-        import numpy as np
-        import matplotlib.pyplot as plt
-        import pandas as pd
-        import math
 
         df = getattr(self, 'df', None)
         if df is None or df.empty:
@@ -734,7 +718,7 @@ class PlotComprehensiveAnalysis:
                     neither = (~s0_bool & ~s1_bool).sum()
                     counts = pd.Series({'both': int(both), f'only_{s0}': int(only0), f'only_{s1}': int(only1), 'neither': int(neither)})
                 else:
-                    # no success info available: create zeros (explicit)
+                    # no success info available: create zeros
                     counts = pd.Series({'both': 0, f'only_{s0}': 0, f'only_{s1}': 0, 'neither': len(df)})
 
             order = ['both', f'only_{s0}', f'only_{s1}', 'neither']
@@ -749,7 +733,6 @@ class PlotComprehensiveAnalysis:
 
         fig.tight_layout()
         return self._savefig(fig, "05_paired_differences_and_success.png")
-
 
     def fig_correlation_heatmap(self):
         # correlation heatmap of numeric metrics
@@ -807,11 +790,8 @@ class PlotComprehensiveAnalysis:
         ax.set_title('Z-scored average metrics (solver x metric)')
         plt.tight_layout()
         return self._savefig(fig, "appendix_zscore_heatmap.png")
-
-
-
+    
     #  Summaries & averages
-
     def save_summary_table(self):
         df = self.df
         rows = []
@@ -829,7 +809,6 @@ class PlotComprehensiveAnalysis:
         summary_df = pd.DataFrame(rows)
         csvp = os.path.join(self.output_folder, 'summary_table_by_solver.csv')
         summary_df.to_csv(csvp, index=False)
-        # also JSON
         jsonp = os.path.join(self.output_folder, 'summary_table_by_solver.json')
         summary_df.to_json(jsonp, orient='records', indent=2)
         return csvp, jsonp
@@ -839,9 +818,6 @@ class PlotComprehensiveAnalysis:
         Calculate averaged data across different metrics grouped by difficulty level.
         Returns CSV file path and the grouped DataFrame.
         """
-        import pandas as pd
-        import numpy as np
-        import os
         
         df = self.df.copy()
         
@@ -965,7 +941,7 @@ class PlotComprehensiveAnalysis:
                 group_df = group_df.sort_values('difficulty_category')
         
         # Save to CSV
-        csv_path = os.path.join(self.output_folder, 'averaged_metrics_by_difficulty.csv')
+        csv_path = os.path.join(self.output_folder, 'benchmark_data/averaged_metrics_by_difficulty.csv')
         group_df.to_csv(csv_path, index=False)
         
         # Also save a simplified version for quick viewing
@@ -982,7 +958,7 @@ class PlotComprehensiveAnalysis:
             # Only include columns that actually exist
             available_columns = [col for col in simple_columns if col in group_df.columns]
             simple_df = group_df[available_columns]
-            simple_csv_path = os.path.join(self.output_folder, 'simplified_metrics_by_difficulty.csv')
+            simple_csv_path = os.path.join(self.output_folder, 'benchmark_data/simplified_metrics_by_difficulty.csv')
             simple_df.to_csv(simple_csv_path, index=False)
         
         self._log(f"Computed group averages for {len(group_df)} difficulty categories")
@@ -993,12 +969,11 @@ class PlotComprehensiveAnalysis:
         Main entrypoint: build df, create plots, summaries, and return a dict of outputs.
         This robust version wraps each plotting call in try/except so one failure doesn't stop the pipeline.
         """
-        import os, json
         outputs = {}
         self._log("Building dataframe...")
         self.build_dataframe()
 
-        # Core plots (existing)
+        # Core plots
         try:
             self._log("Generating Figure: moves")
             outputs['fig_moves'] = self.fig_moves()
@@ -1017,7 +992,7 @@ class PlotComprehensiveAnalysis:
         except Exception as e:
             self._log("fig_resources failed:", e)
 
-        # Difficulty plot (replaced)
+        # Difficulty plot 
         try:
             self._log("Generating Figure: difficulty")
             outputs['fig_difficulty'] = self.fig_difficulty()
@@ -1058,7 +1033,7 @@ class PlotComprehensiveAnalysis:
         except Exception as e:
             self._log("save_summary_table failed:", e)
 
-        # New: averaged metrics by difficulty (grouped bar chart)
+        # averaged metrics by difficulty (grouped bar chart)
         try:
             self._log("Generating Figure: avg_metrics_by_difficulty")
             outputs['fig_avg_metrics_by_difficulty'] = self.fig_avg_metrics_by_difficulty()
@@ -1082,7 +1057,6 @@ class PlotComprehensiveAnalysis:
 
         self._log("Done. Files written to:", getattr(self, 'output_folder', 'unknown'))
         return outputs
-
 
     def fig_ecdf(self):
         # ECDFs for time and moves per solver (two-panel).
@@ -1118,7 +1092,6 @@ class PlotComprehensiveAnalysis:
 
         return self._savefig(fig, "06_ecdf_time_and_moves.png")
 
-
     def fig_nodes_time_scatter(self, color_by='solver'):
         # Scatter nodes_expanded vs time, colored by solver or difficulty.
         df = self.df
@@ -1126,8 +1099,6 @@ class PlotComprehensiveAnalysis:
         eps = 1e-9
         if color_by == 'solver':
             for s in self.solvers:
-                col_nodes = _ensure_numeric(df[f"{s}_nodes_expanded"]).dropna()
-                col_time = _ensure_numeric(df[f"{s}_time"]).dropna()
                 common = df[[f"{s}_nodes_expanded", f"{s}_time", f"{s}_moves"]].dropna()
                 if common.empty:
                     continue
@@ -1135,7 +1106,6 @@ class PlotComprehensiveAnalysis:
                 y = common[f"{s}_time"]
                 sizes = (common[f"{s}_moves"].fillna(common[f"{s}_moves"].median()) + 1) * 6
                 ax.scatter(x, y, alpha=0.6, s=sizes, label=s)
-                # Spearman corr
                 try:
                     rho, p = stats.spearmanr(x, y, nan_policy='omit')
                     ax.annotate(f"{s} ρ={rho:.2f}", xy=(0.02, 0.95 - 0.05*self.solvers.index(s)), 
@@ -1227,15 +1197,14 @@ class PlotComprehensiveAnalysis:
                 results[metric] = res
                 continue
             diff = a - b
-            # paired t-test (if approx normal)
+            # paired t-test 
             try:
                 t_stat, p_t = stats.ttest_rel(a, b, nan_policy='omit')
             except Exception:
                 p_t = None
                 t_stat = None
-            # Wilcoxon signed-rank (non-parametric)
+            # Wilcoxon signed-rank 
             try:
-                # note: wilcoxon requires nonzero differences; handle zero-only case
                 w_stat, p_w = stats.wilcoxon(a, b)
             except Exception:
                 p_w = None
@@ -1255,7 +1224,7 @@ class PlotComprehensiveAnalysis:
                 'sd_diff': float(sd)
             })
             results[metric] = res
-        # save small JSON
+        # save JSON
         p = os.path.join(self.output_folder, 'stat_tests_paired.json')
         with open(p, 'w') as f:
             json.dump(results, f, indent=2)

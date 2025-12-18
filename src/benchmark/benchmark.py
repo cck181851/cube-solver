@@ -7,18 +7,23 @@ import platform
 import psutil
 import sys
 import os
+import csv
+import math
+import pandas as pd
 from datetime import datetime
-from src.cube_solver.cube.cube import Cube
 from src.cube_solver.solver.thistlethwaite import Thistlethwaite
 from src.cube_solver.solver.kociemba import Kociemba
-from cube_difficulty_categorizer import CubeDifficultyCategorizer, CubeDifficulty
+from src.benchmark.cube_difficulty_categorizer import CubeDifficultyCategorizer
+from src.benchmark.plot_comprehensive_analysis import PlotComprehensiveAnalysis
+
+sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+os.makedirs("benchmark_data", exist_ok=True)
 
 # store results
 all_results = []
 
-def create_comprehensive_plots(results, output_filename="plots"):
+def create_comprehensive_plots(results, output_filename="benchmark_data"):
     """Create comprehensive plots for benchmark results."""
-    from plot_comprehensive_analysis import PlotComprehensiveAnalysis
 
     if not os.path.exists(output_filename):
         os.makedirs(output_filename)
@@ -107,7 +112,7 @@ def calculate_comprehensive_stats(data):
     
     return stats
 
-def run_solver(solver, cube: Cube, name: str, per_phase=False, optimal=False):
+def run_solver(solver, cube, name, per_phase = False, optimal = False):
     print(f"\n--- {name} ---")
 
     tracemalloc.start()
@@ -144,8 +149,8 @@ def run_solver(solver, cube: Cube, name: str, per_phase=False, optimal=False):
         "memory": mem_peak,
     })
 
-def run_solver_quiet(solver, cube: Cube, name: str, per_phase=False, optimal=False):
-    """Run solver without printing detailed output and collect comprehensive metrics."""
+def run_solver_quiet(solver, cube, name, per_phase=False, optimal=False):
+    """Run solver and collect comprehensive metrics."""
     tracemalloc.start()
     start_time = time.perf_counter()
     cpu_start = time.process_time()
@@ -191,7 +196,7 @@ def run_solver_quiet(solver, cube: Cube, name: str, per_phase=False, optimal=Fal
     all_results.append(result)
     return result
 
-def run_test_quiet(cube_difficulty: CubeDifficulty):
+def run_test_quiet(cube_difficulty):
     """Run benchmark test quietly and return results."""
     cube = cube_difficulty.cube
     
@@ -399,7 +404,7 @@ def print_overall_statistics(grouped_results, output_file):
                          f"Std={stats['kociemba']['memory']['std']:.2f}\n")
 
 
-def save_comprehensive_results(results, grouped_results, output_filename="benchmark_results.txt"):
+def save_comprehensive_results(results, grouped_results, output_filename="benchmark_data/benchmark_results.txt"):
     """Save comprehensive results with system information and detailed statistics."""
     system_info = get_system_info()
     
@@ -562,14 +567,6 @@ if __name__ == "__main__":
         results.append(result)
 
     # Save per-instance CSV for reproducibility / paired analysis
-    try:
-        import pandas as pd
-    except Exception:
-        pd = None
-
-    import csv
-    import math
-
     def _safe_get(obj, attr_names):
         if obj is None:
             return None
@@ -602,7 +599,7 @@ if __name__ == "__main__":
         except Exception:
             return None
 
-    def save_per_instance_csv(results, filename="results_per_instance.csv"):
+    def save_per_instance_csv(results, filename="benchmark_data/results_per_instance.csv"):
         rows = []
         for i, r in enumerate(results, start=1):
             ci = r.get('cube_info', {}) or {}
@@ -657,8 +654,6 @@ if __name__ == "__main__":
         if pd is not None:
             try:
                 df = pd.DataFrame(rows)                
-                # df['th_solution'] = df['th_solution'].apply(lambda s: s if s is None else s[:200])
-                # df['koc_solution'] = df['koc_solution'].apply(lambda s: s if s is None else s[:200])
                 df.to_csv(filename, index=False, encoding='utf-8')
                 print(f"Per-instance CSV saved to {filename} (pandas). Rows: {len(df)}")
                 return
@@ -695,17 +690,17 @@ if __name__ == "__main__":
             print("Failed to write per-instance CSV:", e)
 
     # saves to project root
-    save_per_instance_csv(results, filename="results_per_instance.csv")    
+    save_per_instance_csv(results, filename="benchmark_data/results_per_instance.csv")    
     # print(results)
 
     # Group results by difficulty and metric
     print("Grouping results by difficulty level and metric...")
     grouped_results = group_results_by_difficulty_and_metric(results)
 
-    create_comprehensive_plots(results, output_filename="plots")
+    create_comprehensive_plots(results, output_filename="benchmark_data")
     
     # Save comprehensive results
-    output_filename = "benchmark_results.txt"
+    output_filename = "benchmark_data/benchmark_results.txt"
     print(f"Writing comprehensive results to {output_filename}...")
     save_comprehensive_results(results, grouped_results, output_filename)
     

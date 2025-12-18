@@ -1,19 +1,16 @@
 import random
 import numpy as np
-from typing import Dict, List, Tuple, Any
+from typing import Dict, Any
 from dataclasses import dataclass
 from collections import defaultdict
 import sys
 import os
+from src.cube_solver.cube.cube import Cube
+from src.cube_solver.solver.thistlethwaite import Thistlethwaite
+from src.cube_solver.solver.kociemba import Kociemba
 
 # Add the src directory to the path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-
-from cube_solver.cube.cube import Cube
-from cube_solver.cube.enums import Face, Color, Cubie, Orbit
-from cube_solver.solver.thistlethwaite import Thistlethwaite
-from cube_solver.solver.kociemba import Kociemba
-
 
 @dataclass
 class CubeDifficulty:
@@ -43,7 +40,6 @@ class CubeDifficulty:
     solution_category: str
     overall_category: str
 
-
 class CubeDifficultyCategorizer:
     # Categorizes cube configurations by difficulty metrics.
     
@@ -51,7 +47,7 @@ class CubeDifficultyCategorizer:
         self.solver_thistlethwaite = Thistlethwaite()
         self.solver_kociemba = Kociemba()
     
-    def generate_scramble(self, length: int = None) -> str:
+    def generate_scramble(self, length = None):
         # Generate a random scramble.
         moves = ["U", "D", "L", "R", "F", "B"]
         suffixes = ["", "'", "2"]
@@ -75,7 +71,7 @@ class CubeDifficultyCategorizer:
         
         return " ".join(scramble)
     
-    def calculate_manhattan_distance(self, cube: Cube) -> int:
+    def calculate_manhattan_distance(self, cube):
         # Calculate Manhattan distance of cubies from their solved positions.
         total_distance = 0
         
@@ -95,7 +91,7 @@ class CubeDifficultyCategorizer:
         
         return total_distance
     
-    def calculate_hamming_distance(self, cube: Cube) -> Dict[str, int]:
+    def calculate_hamming_distance(self, cube):
         # Calculate Hamming distance (number of pieces in wrong positions).
         corner_hamming = sum(1 for i in range(8) if cube.permutation[i] != i)
         edge_hamming = sum(1 for i in range(8, 20) if cube.permutation[i] != i)
@@ -107,7 +103,7 @@ class CubeDifficultyCategorizer:
             'total_hamming': total_hamming
         }
     
-    def calculate_orientation_distance(self, cube: Cube) -> Dict[str, int]:
+    def calculate_orientation_distance(self, cube):
         # Calculate orientation distance (number of misoriented pieces).
         corner_orientation = sum(1 for i in range(8) if cube.orientation[i] != 0)
         edge_orientation = sum(1 for i in range(8, 20) if cube.orientation[i] != 0)
@@ -119,7 +115,7 @@ class CubeDifficultyCategorizer:
             'total_orientation': total_orientation
         }
     
-    def calculate_phase_distances(self, cube: Cube) -> Dict[str, Any]:
+    def calculate_phase_distances(self, cube):
         # Calculate phase distances for Thistlethwaite and Kociemba solvers.
         try:
             # Get phase coordinates for Thistlethwaite
@@ -147,7 +143,7 @@ class CubeDifficultyCategorizer:
                 'error': str(e)
             }
     
-    def estimate_solution_length(self, cube: Cube) -> Tuple[int, float]:
+    def estimate_solution_length(self, cube):
         # Estimate solution length and calculate variance.
         solutions = []
         
@@ -176,7 +172,7 @@ class CubeDifficultyCategorizer:
         else:
             return 0, 0.0
     
-    def calculate_face_color_uniformity(self, cube: Cube) -> Dict[str, float]:
+    def calculate_face_color_uniformity(self, cube):
         # Calculate face color uniformity (how many stickers are correct color).
         face_uniformity = {}
         cube_repr = str(cube)
@@ -205,12 +201,12 @@ class CubeDifficultyCategorizer:
             face_stickers = cube_repr[start:end]
             expected_color = expected_colors[face]
             correct_stickers = sum(1 for sticker in face_stickers if sticker == expected_color)
-            uniformity = correct_stickers / 9.0  # 9 stickers per face
+            uniformity = correct_stickers / 9.0  
             face_uniformity[face] = uniformity
         
         return face_uniformity
     
-    def calculate_color_clustering(self, cube: Cube) -> Dict[str, Any]:
+    def calculate_color_clustering(self, cube):
         # Calculate color clustering (size of contiguous same-colored blocks).
         cube_repr = str(cube)
         clustering_metrics = {}
@@ -255,7 +251,7 @@ class CubeDifficultyCategorizer:
         
         return clustering_metrics
     
-    def calculate_matched_pairs(self, cube: Cube) -> Dict[str, int]:
+    def calculate_matched_pairs(self, cube):
         # Calculate number of matched edge/corner color pairs.
         
         matched_corners = 0
@@ -270,7 +266,7 @@ class CubeDifficultyCategorizer:
             'total_matched': matched_corners + matched_edges
         }
     
-    def categorize_by_manhattan_distance(self, manhattan_distance: int) -> str:
+    def categorize_by_manhattan_distance(self, manhattan_distance):
         # Categorize cube by Manhattan distance.
         if manhattan_distance <= 20:
             return "Very Easy"
@@ -283,7 +279,7 @@ class CubeDifficultyCategorizer:
         else:
             return "Expert"
     
-    def categorize_by_hamming_distance(self, hamming_distance: int) -> str:
+    def categorize_by_hamming_distance(self, hamming_distance):
         # Categorize cube by Hamming distance.
         if hamming_distance <= 5:
             return "Very Easy"
@@ -296,7 +292,7 @@ class CubeDifficultyCategorizer:
         else:
             return "Expert"
     
-    def categorize_by_orientation_distance(self, orientation_distance: int) -> str:
+    def categorize_by_orientation_distance(self, orientation_distance):
         # Categorize cube by orientation distance.
         if orientation_distance <= 5:
             return "Very Easy"
@@ -309,7 +305,7 @@ class CubeDifficultyCategorizer:
         else:
             return "Expert"
     
-    def categorize_by_solution_length(self, solution_length: int) -> str:
+    def categorize_by_solution_length(self, solution_length):
         # Categorize cube by estimated solution length.
         if solution_length <= 5:
             return "Very Easy"
@@ -322,7 +318,7 @@ class CubeDifficultyCategorizer:
         else:
             return "Expert"
     
-    def analyze_cube(self, scramble: str) -> CubeDifficulty:
+    def analyze_cube(self, scramble):
         # Analyze a cube and calculate all difficulty metrics.
         cube = Cube(scramble)
         
@@ -365,7 +361,7 @@ class CubeDifficultyCategorizer:
             overall_category=overall_category
         )
     
-    def generate_test_cubes(self, num_cubes: int = 10) -> List[CubeDifficulty]:
+    def generate_test_cubes(self, num_cubes = 10) :
         # Generate a set of test cubes with different difficulty levels.
         cubes = []
         
@@ -380,7 +376,7 @@ class CubeDifficultyCategorizer:
         
         return cubes
     
-    def group_by_metric(self, cubes: List[CubeDifficulty], metric_name: str) -> Dict[str, List[CubeDifficulty]]:
+    def group_by_metric(self, cubes, metric_name):
         # Group cubes by a specific metric.
         groups = defaultdict(list)
         
@@ -400,7 +396,7 @@ class CubeDifficultyCategorizer:
         
         return dict(groups)
     
-    def print_analysis_report(self, cubes: List[CubeDifficulty]):
+    def print_analysis_report(self, cubes):
         # Print a comprehensive analysis report.
         print("=" * 80)
         print("CUBE DIFFICULTY CATEGORIZATION REPORT")
@@ -525,11 +521,8 @@ def main():
     # Return cubes for further use
     return cubes
 
-
 if __name__ == "__main__":
     cubes = main()
-    
-    # Example of how to access specific metrics for algorithm testing
     print("\n" + "=" * 50)
     print("EXAMPLE: Accessing specific metrics for algorithm testing")
     print("=" * 50)
@@ -568,6 +561,3 @@ if __name__ == "__main__":
         print(f"  {category}: {len(group_cubes)} cubes")
         for cube in group_cubes:
             print(f"    - {cube.scramble} (distance: {cube.orientation_distance['total_orientation']})")
-    
-    # Return the cubes for further use
-    print(f"\nReturning {len(cubes)} cube configurations for algorithm testing.")
