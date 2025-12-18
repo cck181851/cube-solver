@@ -99,8 +99,8 @@ Output and artifacts (models, CSVs) are written to `ML_integration_data/` by def
 
 ### Outputs & Where to look
 
-- Benchmark statistics, plots and a human-readable benchmark_results.txt: benchmark_data/
-- Raw logs, intermediate CSVs, and model files for ML: ML_integration_data/
+- Benchmark statistics, plots and a human-readable `benchmark_results.txt`: `benchmark_data/`
+- Raw logs, intermediate CSVs, and model files for ML: `ML_integration_data/`
 - Precomputed pruning tables used by the solvers: tables/
 
 ---
