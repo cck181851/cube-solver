@@ -137,6 +137,8 @@ For issues with reproduction:
 - Verify all table files are present in tables/ directory
 - Ensure Python environment matches requirements
 
+---
+
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.  
